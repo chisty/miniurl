@@ -2,28 +2,35 @@ package main
 
 import (
 	"context"
-	"encoding/json"
 	"fmt"
+	"log"
 	"net/http"
 	"os"
 	"os/signal"
 	"time"
 
+	"github.com/chisty/shortlink/controller"
+	"github.com/chisty/shortlink/database"
+	"github.com/chisty/shortlink/service"
 	"github.com/gorilla/mux"
 )
 
-type LongURL struct {
-	URL string `json:"URL"`
-}
+var (
+	table string                    = os.Getenv("AWS_TABLE")
+	l     *log.Logger               = log.New(os.Stdout, "shortlink-app", log.LstdFlags|log.Lshortfile)
+	db    database.DB               = database.NewDynamoDB(table, l)
+	svc   service.LinkService       = service.NewService(db, l)
+	ctrl  controller.LinkController = controller.NewLinkController(svc, l)
+)
 
 func main() {
 	router := mux.NewRouter()
 	getRouter := router.Methods(http.MethodGet).Subrouter()
 	postRouter := router.Methods(http.MethodPost).Subrouter()
 
-	getRouter.HandleFunc("/{id}", getByID)
-
-	postRouter.HandleFunc("/", save)
+	getRouter.HandleFunc("/test", ctrl.Test)
+	getRouter.HandleFunc("/{id}", ctrl.Get)
+	postRouter.HandleFunc("/", ctrl.Save)
 
 	s := &http.Server{
 		Addr:         ":9000",
@@ -44,33 +51,11 @@ func main() {
 	signal.Notify(sigChan, os.Interrupt)
 	signal.Notify(sigChan, os.Kill)
 
-	fmt.Println("Server running...")
+	l.Println("Server running...")
 
 	sig := <-sigChan
-	fmt.Println("Received termination command. Shutting down gracefully. signal= ", sig)
+	l.Println("Received termination command. Shutting down gracefully. signal= ", sig)
 
 	tc, _ := context.WithTimeout(context.Background(), 30*time.Second)
 	s.Shutdown(tc)
-}
-
-func getByID(response http.ResponseWriter, r *http.Request) {
-	response.Header().Set("Content-Type", "application/json")
-	vars := mux.Vars(r)
-	id := vars["id"]
-	fmt.Println("ShortUrl: ", id)
-
-	response.WriteHeader(http.StatusOK)
-}
-
-func save(response http.ResponseWriter, r *http.Request) {
-	response.Header().Set("Content-Type", "application/json")
-	input := LongURL{}
-	decoder := json.NewDecoder(r.Body)
-	err := decoder.Decode(&input)
-
-	if err != nil {
-		panic(err)
-	}
-	fmt.Println(input.URL)
-	response.WriteHeader(http.StatusOK)
 }
