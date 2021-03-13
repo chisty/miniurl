@@ -1,4 +1,4 @@
-del shortlink.exe
+del miniurl.exe
 go build
 cls
-shortlink.exe
+miniurl.exe

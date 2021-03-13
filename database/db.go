@@ -1,8 +1,8 @@
 package database
 
-import "github.com/chisty/shortlink/model"
+import "github.com/chisty/miniurl/model"
 
 type DB interface {
-	Save(data *model.ShortLink) error
-	Get(id string) (*model.ShortLink, error)
+	Save(data *model.MiniURL) error
+	Get(id string) (*model.MiniURL, error)
 }

@@ -1,4 +1,4 @@
-module github.com/chisty/shortlink
+module github.com/chisty/miniurl
 
 go 1.16
 

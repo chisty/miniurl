@@ -9,7 +9,7 @@ import (
 	"github.com/aws/aws-sdk-go/service/dynamodb"
 	"github.com/aws/aws-sdk-go/service/dynamodb/dynamodbattribute"
 	"github.com/aws/aws-sdk-go/service/dynamodb/dynamodbiface"
-	"github.com/chisty/shortlink/model"
+	"github.com/chisty/miniurl/model"
 )
 
 type dymamoDB struct {
@@ -27,7 +27,7 @@ func NewDynamoDB(tbl string, log *log.Logger, rgn, acsKey, secKey string) DB {
 	}
 }
 
-func (db *dymamoDB) Get(id string) (*model.ShortLink, error) {
+func (db *dymamoDB) Get(id string) (*model.MiniURL, error) {
 	db.logger.Println("get from ddb: ", id)
 
 	item, err := getItem(db.context, db.table, id)
@@ -39,7 +39,7 @@ func (db *dymamoDB) Get(id string) (*model.ShortLink, error) {
 		return nil, nil
 	}
 
-	slink := model.ShortLink{}
+	slink := model.MiniURL{}
 	err = dynamodbattribute.UnmarshalMap(item.Item, &slink)
 	if err != nil {
 		db.logger.Fatal(err)
@@ -50,7 +50,7 @@ func (db *dymamoDB) Get(id string) (*model.ShortLink, error) {
 	return &slink, nil
 }
 
-func (db *dymamoDB) Save(data *model.ShortLink) error {
+func (db *dymamoDB) Save(data *model.MiniURL) error {
 	db.logger.Println("save in ddb: ", data.ID)
 
 	attrVal, err := dynamodbattribute.MarshalMap(data)

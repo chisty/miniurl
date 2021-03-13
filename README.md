@@ -1,2 +1,2 @@
-# shortlink
-microservice to make short link/URL
+# miniurl
+microservice to make short/mini url

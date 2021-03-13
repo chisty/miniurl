@@ -4,16 +4,16 @@ import (
 	"log"
 
 	"github.com/bwmarrin/snowflake"
-	"github.com/chisty/shortlink/database"
-	"github.com/chisty/shortlink/model"
+	"github.com/chisty/miniurl/database"
+	"github.com/chisty/miniurl/model"
 )
 
 var base64 []rune
 
 //ShortLinkService ---
-type LinkService interface {
-	Get(id string) (*model.ShortLink, error)
-	Save(data *model.ShortLink) (*model.ShortLink, error)
+type MiniURLSvc interface {
+	Get(id string) (*model.MiniURL, error)
+	Save(data *model.MiniURL) (*model.MiniURL, error)
 }
 
 type service struct {
@@ -26,8 +26,8 @@ func init() {
 	base64 = []rune("0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz_=")
 }
 
-//NewService ---
-func NewService(d database.DB, idgenId int, log *log.Logger) LinkService {
+//NewMiniURLSvc ---
+func NewMiniURLSvc(d database.DB, idgenId int, log *log.Logger) MiniURLSvc {
 	idGen, err := snowflake.NewNode(int64(idgenId))
 	if err != nil {
 		panic(err)
@@ -40,18 +40,18 @@ func NewService(d database.DB, idgenId int, log *log.Logger) LinkService {
 	}
 }
 
-func (s *service) Get(id string) (*model.ShortLink, error) {
-	s.logger.Printf("service get %s", id)
-	return s.db.Get(id)
+func (svc *service) Get(id string) (*model.MiniURL, error) {
+	svc.logger.Printf("service get %s", id)
+	return svc.db.Get(id)
 }
 
-func (s *service) Save(data *model.ShortLink) (*model.ShortLink, error) {
-	data.ID = getNextID(s.idGen)
-	err := s.db.Save(data)
+func (svc *service) Save(data *model.MiniURL) (*model.MiniURL, error) {
+	data.ID = nextID(svc.idGen)
+	err := svc.db.Save(data)
 	return data, err
 }
 
-func getNextID(idGen *snowflake.Node) string {
+func nextID(idGen *snowflake.Node) string {
 	id := idGen.Generate().Int64()
 	return convertToBase64(id, base64)
 }

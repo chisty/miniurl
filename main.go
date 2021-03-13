@@ -10,10 +10,10 @@ import (
 	"syscall"
 	"time"
 
-	"github.com/chisty/shortlink/cache"
-	"github.com/chisty/shortlink/controller"
-	"github.com/chisty/shortlink/database"
-	"github.com/chisty/shortlink/service"
+	"github.com/chisty/miniurl/cache"
+	"github.com/chisty/miniurl/controller"
+	"github.com/chisty/miniurl/database"
+	"github.com/chisty/miniurl/service"
 	"github.com/gorilla/mux"
 )
 
@@ -24,8 +24,8 @@ func main() {
 	logger := log.New(os.Stdout, "shortlink-app", log.LstdFlags|log.Lshortfile)
 	redis := cache.NewRedis(cfg.Redis.Host, logger, cfg.Redis.TTL, cfg.Redis.MaxIdle, cfg.Redis.MaxActive)
 	db := database.NewDynamoDB(cfg.AWS.Table, logger, cfg.AWS.Region, cfg.AWS.AccessKey, cfg.AWS.SecretKey)
-	svc := service.NewService(db, cfg.IdGenNodeId, logger)
-	ctrl := controller.NewLinkController(svc, redis, logger)
+	svc := service.NewMiniURLSvc(db, cfg.IdGenNodeId, logger)
+	ctrl := controller.NewMiniURLCtrl(svc, redis, logger)
 
 	router := mux.NewRouter()
 	getRouter := router.Methods(http.MethodGet).Subrouter()

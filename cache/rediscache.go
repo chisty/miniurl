@@ -4,7 +4,7 @@ import (
 	"encoding/json"
 	"log"
 
-	"github.com/chisty/shortlink/model"
+	"github.com/chisty/miniurl/model"
 	"github.com/gomodule/redigo/redis"
 )
 
@@ -26,7 +26,7 @@ func NewRedis(host string, lg *log.Logger, ttl, mxidle, mxactive int) Cache {
 	return r
 }
 
-func (rc *rediscache) Get(key string) (*model.ShortLink, error) {
+func (rc *rediscache) Get(key string) (*model.MiniURL, error) {
 	conn := rc.pool.Get()
 	defer conn.Close()
 
@@ -36,19 +36,19 @@ func (rc *rediscache) Get(key string) (*model.ShortLink, error) {
 		return nil, err
 	}
 
-	slink := model.ShortLink{}
-	err = json.Unmarshal([]byte(val), &slink)
+	miniurl := model.MiniURL{}
+	err = json.Unmarshal([]byte(val), &miniurl)
 	if err != nil {
 		rc.logger.Println("redis value unmarshalling error: ", err.Error())
 		return nil, err
 	}
 
-	rc.logger.Println("data found in redis: ", slink.URL)
+	rc.logger.Println("data found in redis: ", miniurl.URL)
 
-	return &slink, nil
+	return &miniurl, nil
 }
 
-func (rc *rediscache) Set(key string, val *model.ShortLink) error {
+func (rc *rediscache) Set(key string, val *model.MiniURL) error {
 	jval, err := json.Marshal(val)
 	if err != nil {
 		rc.logger.Println("redis set error: ", err.Error())

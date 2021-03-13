@@ -52,9 +52,9 @@ func TestConvertToBase64Fail(t *testing.T) {
 }
 
 func TestNextUniqueId(t *testing.T) {
-	node, _ := snowflake.NewNode(1)
+	idGen, _ := snowflake.NewNode(1)
 
-	if getNextID(node) == getNextID(node) {
+	if nextID(idGen) == nextID(idGen) {
 		t.Error("Test failed. Unique id is not being generated.")
 	}
 }
