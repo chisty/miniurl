@@ -31,6 +31,7 @@ func NewLinkController(service service.LinkService, log *log.Logger) LinkControl
 
 func (lc *linkController) Test(rw http.ResponseWriter, r *http.Request) {
 	rw.Header().Set("Content-Type", "application/json")
+	lc.s.Test()
 	rw.WriteHeader(http.StatusOK)
 	rw.Write([]byte("Test working. Hello from server..."))
 }

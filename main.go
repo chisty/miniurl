@@ -17,9 +17,10 @@ import (
 
 var (
 	table string                    = os.Getenv("AWS_TABLE")
+	nid   string                    = os.Getenv("NODE_ID")
 	l     *log.Logger               = log.New(os.Stdout, "shortlink-app", log.LstdFlags|log.Lshortfile)
 	db    database.DB               = database.NewDynamoDB(table, l)
-	svc   service.LinkService       = service.NewService(db, l)
+	svc   service.LinkService       = service.NewService(db, nid, l)
 	ctrl  controller.LinkController = controller.NewLinkController(svc, l)
 )
 

@@ -67,7 +67,6 @@ func TestPost(t *testing.T) {
 	keyRes := *res.Attributes["id"].S
 	valRes := *res.Attributes["URL"].S
 
-	t.Logf("KeyRes= %s, valRes= %s\n", keyRes, valRes)
 	if keyRes != "shortId" {
 		t.Errorf("Wrong key returned. Shoule be id, was %s", keyRes)
 	}
