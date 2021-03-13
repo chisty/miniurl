@@ -2,11 +2,11 @@ package main
 
 import (
 	"context"
-	"fmt"
 	"log"
 	"net/http"
 	"os"
 	"os/signal"
+	"syscall"
 	"time"
 
 	"github.com/chisty/shortlink/controller"
@@ -41,22 +41,30 @@ func main() {
 		WriteTimeout: 1 * time.Second,
 	}
 
+	appFatalError := make(chan error, 1)
+
 	go func() {
-		err := s.ListenAndServe()
-		if err != nil {
-			fmt.Println(err)
-		}
+		appFatalError <- s.ListenAndServe()
 	}()
 
-	sigChan := make(chan os.Signal)
-	signal.Notify(sigChan, os.Interrupt)
-	signal.Notify(sigChan, os.Kill)
+	sigChan := make(chan os.Signal, 1)
+	signal.Notify(sigChan, os.Interrupt, os.Kill, syscall.SIGTERM)
 
 	l.Println("Server running...")
 
-	sig := <-sigChan
-	l.Println("Received termination command. Shutting down gracefully. signal= ", sig)
-
-	tc, _ := context.WithTimeout(context.Background(), 30*time.Second)
-	s.Shutdown(tc)
+	select {
+	case err := <-appFatalError:
+		if err != nil {
+			l.Fatal(err)
+			return
+		}
+	case sig := <-sigChan:
+		l.Println("Received termination command. Shutting down gracefully. signal= ", sig)
+		tc, _ := context.WithTimeout(context.Background(), 30*time.Second)
+		err := s.Shutdown(tc)
+		if err != nil {
+			l.Printf("main: graceful shutdown failed %v", err)
+			return
+		}
+	}
 }
