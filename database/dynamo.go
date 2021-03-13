@@ -101,7 +101,7 @@ func createDBClient() *dynamodb.DynamoDB {
 	accessKey := os.Getenv("AWS_ACCESS_KEY")
 	secretKey := os.Getenv("AWS_SECRET_KEY")
 
-	fmt.Printf("Env var found. Region: %s, AccessKey: %s, SecretKey: %s\n", region, accessKey, secretKey)
+	fmt.Printf("env var found. Region: %s, AccessKey: %s, SecretKey: %s\n", region, accessKey, secretKey)
 
 	sess := session.Must(session.NewSession(&aws.Config{
 		Region:      aws.String(region),

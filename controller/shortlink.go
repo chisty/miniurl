@@ -44,25 +44,18 @@ func (lc *linkController) Get(rw http.ResponseWriter, r *http.Request) {
 
 	vars := mux.Vars(r)
 	id := vars["id"]
-	lc.l.Println("request id: ", id)
 
 	item, err := lc.c.Get(id)
-	if err != nil {
-		rw.WriteHeader(http.StatusInternalServerError)
-		return
-	}
-
 	if item != nil {
-		lc.l.Println("Item found in cache")
 		rw.WriteHeader(http.StatusOK)
 		item.ToJSON(rw)
+		return
 	}
 
 	slink, err := lc.s.Get(id)
 	if err != nil {
-		lc.l.Println("error in lc.s.get")
 		rw.WriteHeader(http.StatusNotFound)
-		json.NewEncoder(rw).Encode("no data found")
+		json.NewEncoder(rw).Encode("no value found for this id")
 		return
 	}
 
@@ -79,7 +72,7 @@ func (lc *linkController) Save(rw http.ResponseWriter, r *http.Request) {
 	err := link.FromJSON(r.Body)
 
 	if err != nil {
-		http.Error(rw, "Unable to unmarshal JSON", http.StatusBadRequest)
+		http.Error(rw, "invalid or malformed input", http.StatusBadRequest)
 		return
 	}
 

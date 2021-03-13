@@ -53,7 +53,7 @@ func main() {
 	sigChan := make(chan os.Signal, 1)
 	signal.Notify(sigChan, os.Interrupt, os.Kill, syscall.SIGTERM)
 
-	l.Println("Server running...")
+	l.Println("server running...")
 
 	select {
 	case err := <-appFatalError:
@@ -62,7 +62,7 @@ func main() {
 			return
 		}
 	case sig := <-sigChan:
-		l.Println("Received termination command. Shutting down gracefully. signal= ", sig)
+		l.Println("received termination command. Shutting down gracefully. signal= ", sig)
 		tc, _ := context.WithTimeout(context.Background(), 30*time.Second)
 		err := s.Shutdown(tc)
 		if err != nil {
