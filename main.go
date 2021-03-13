@@ -9,6 +9,7 @@ import (
 	"syscall"
 	"time"
 
+	"github.com/chisty/shortlink/cache"
 	"github.com/chisty/shortlink/controller"
 	"github.com/chisty/shortlink/database"
 	"github.com/chisty/shortlink/service"
@@ -16,12 +17,14 @@ import (
 )
 
 var (
-	table string                    = os.Getenv("AWS_TABLE")
-	nid   string                    = os.Getenv("NODE_ID")
+	table string = os.Getenv("AWS_TABLE")
+	nid   string = os.Getenv("NODE_ID")
+
 	l     *log.Logger               = log.New(os.Stdout, "shortlink-app", log.LstdFlags|log.Lshortfile)
+	redis cache.Cache               = cache.NewRedis("localhost:6379", l, 10, 80, 12000)
 	db    database.DB               = database.NewDynamoDB(table, l)
 	svc   service.LinkService       = service.NewService(db, nid, l)
-	ctrl  controller.LinkController = controller.NewLinkController(svc, l)
+	ctrl  controller.LinkController = controller.NewLinkController(svc, redis, l)
 )
 
 func main() {
