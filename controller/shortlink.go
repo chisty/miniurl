@@ -45,7 +45,7 @@ func (lc *linkController) Get(rw http.ResponseWriter, r *http.Request) {
 	}
 
 	slink, err := lc.service.Get(id)
-	if err != nil {
+	if err != nil || slink == nil {
 		rw.WriteHeader(http.StatusNotFound)
 		json.NewEncoder(rw).Encode("no value found for this id")
 		return

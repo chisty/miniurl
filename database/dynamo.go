@@ -35,6 +35,10 @@ func (db *dymamoDB) Get(id string) (*model.ShortLink, error) {
 		return nil, err
 	}
 
+	if item == nil {
+		return nil, nil
+	}
+
 	slink := model.ShortLink{}
 	err = dynamodbattribute.UnmarshalMap(item.Item, &slink)
 	if err != nil {
@@ -65,7 +69,7 @@ func (db *dymamoDB) Save(data *model.ShortLink) error {
 }
 
 func getItem(dbApi dynamodbiface.DynamoDBAPI, tbl string, id string) (*dynamodb.GetItemOutput, error) {
-	item, err := dbApi.GetItem(&dynamodb.GetItemInput{
+	resp, err := dbApi.GetItem(&dynamodb.GetItemInput{
 		TableName: aws.String(tbl),
 		Key: map[string]*dynamodb.AttributeValue{
 			"id": {
@@ -78,7 +82,11 @@ func getItem(dbApi dynamodbiface.DynamoDBAPI, tbl string, id string) (*dynamodb.
 		return nil, err
 	}
 
-	return item, nil
+	if len(resp.Item) == 0 {
+		return nil, nil
+	}
+
+	return resp, nil
 }
 
 func saveItem(dbApi dynamodbiface.DynamoDBAPI, tbl string, attrVal map[string]*dynamodb.AttributeValue) (*dynamodb.PutItemOutput, error) {
