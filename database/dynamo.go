@@ -1,9 +1,7 @@
 package database
 
 import (
-	"fmt"
 	"log"
-	"os"
 
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/credentials"
@@ -17,20 +15,20 @@ import (
 type dymamoDB struct {
 	table   string
 	context dynamodbiface.DynamoDBAPI
-	l       *log.Logger
+	logger  *log.Logger
 }
 
 //NewDynamoDB ---
-func NewDynamoDB(tbl string, log *log.Logger) DB {
+func NewDynamoDB(tbl string, log *log.Logger, rgn, acsKey, secKey string) DB {
 	return &dymamoDB{
 		table:   tbl,
-		l:       log,
-		context: createDBClient(),
+		logger:  log,
+		context: createDBClient(rgn, acsKey, secKey),
 	}
 }
 
 func (db *dymamoDB) Get(id string) (*model.ShortLink, error) {
-	db.l.Println("get from ddb: ", id)
+	db.logger.Println("get from ddb: ", id)
 
 	item, err := getItem(db.context, db.table, id)
 	if err != nil {
@@ -40,16 +38,16 @@ func (db *dymamoDB) Get(id string) (*model.ShortLink, error) {
 	slink := model.ShortLink{}
 	err = dynamodbattribute.UnmarshalMap(item.Item, &slink)
 	if err != nil {
-		db.l.Fatal(err)
+		db.logger.Fatal(err)
 		return nil, err
 	}
 
-	db.l.Printf("get from ddb success with value: %s", slink.URL)
+	db.logger.Printf("get from ddb success with value: %s", slink.URL)
 	return &slink, nil
 }
 
 func (db *dymamoDB) Save(data *model.ShortLink) error {
-	db.l.Println("save in ddb: ", data.ID)
+	db.logger.Println("save in ddb: ", data.ID)
 
 	attrVal, err := dynamodbattribute.MarshalMap(data)
 	if err != nil {
@@ -61,7 +59,7 @@ func (db *dymamoDB) Save(data *model.ShortLink) error {
 		return err
 	}
 
-	db.l.Printf("data saved with id: %s\n", data.ID)
+	db.logger.Printf("data saved with id: %s\n", data.ID)
 
 	return nil
 }
@@ -96,13 +94,7 @@ func saveItem(dbApi dynamodbiface.DynamoDBAPI, tbl string, attrVal map[string]*d
 	return item, nil
 }
 
-func createDBClient() *dynamodb.DynamoDB {
-	region := os.Getenv("AWS_REGION")
-	accessKey := os.Getenv("AWS_ACCESS_KEY")
-	secretKey := os.Getenv("AWS_SECRET_KEY")
-
-	fmt.Printf("env var found. Region: %s, AccessKey: %s, SecretKey: %s\n", region, accessKey, secretKey)
-
+func createDBClient(region, accessKey, secretKey string) *dynamodb.DynamoDB {
 	sess := session.Must(session.NewSession(&aws.Config{
 		Region:      aws.String(region),
 		Credentials: credentials.NewStaticCredentials(accessKey, secretKey, ""),

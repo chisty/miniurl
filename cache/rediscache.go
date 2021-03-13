@@ -9,19 +9,19 @@ import (
 )
 
 type rediscache struct {
-	host string
-	ttl  int
-	pool *redis.Pool
-	l    *log.Logger
+	host   string
+	ttl    int
+	pool   *redis.Pool
+	logger *log.Logger
 }
 
 func NewRedis(host string, lg *log.Logger, ttl, mxidle, mxactive int) Cache {
 	pl := initPool(host, mxidle, mxactive)
 	r := &rediscache{
-		host: host,
-		ttl:  ttl,
-		l:    lg,
-		pool: pl,
+		host:   host,
+		ttl:    ttl,
+		logger: lg,
+		pool:   pl,
 	}
 	return r
 }
@@ -32,18 +32,18 @@ func (rc *rediscache) Get(key string) (*model.ShortLink, error) {
 
 	val, err := getVal(conn, rc.ttl, key)
 	if err != nil {
-		rc.l.Printf("redis cache miss: fail to get key %s\n", key)
+		rc.logger.Printf("redis cache miss: fail to get key %s\n", key)
 		return nil, err
 	}
 
 	slink := model.ShortLink{}
 	err = json.Unmarshal([]byte(val), &slink)
 	if err != nil {
-		rc.l.Println("redis value unmarshalling error: ", err.Error())
+		rc.logger.Println("redis value unmarshalling error: ", err.Error())
 		return nil, err
 	}
 
-	rc.l.Println("data found in redis: ", slink.URL)
+	rc.logger.Println("data found in redis: ", slink.URL)
 
 	return &slink, nil
 }
@@ -51,7 +51,7 @@ func (rc *rediscache) Get(key string) (*model.ShortLink, error) {
 func (rc *rediscache) Set(key string, val *model.ShortLink) error {
 	jval, err := json.Marshal(val)
 	if err != nil {
-		rc.l.Println("redis set error: ", err.Error())
+		rc.logger.Println("redis set error: ", err.Error())
 		return err
 	}
 
@@ -60,11 +60,11 @@ func (rc *rediscache) Set(key string, val *model.ShortLink) error {
 
 	err = setVal(conn, rc.ttl, key, string(jval))
 	if err != nil {
-		rc.l.Printf("redis error: fail to save key %s, error %s\n", key, err.Error())
+		rc.logger.Printf("redis error: fail to save key %s, error %s\n", key, err.Error())
 		return err
 	}
 
-	rc.l.Println("data saved in redis: ", string(jval))
+	rc.logger.Println("data saved in redis: ", string(jval))
 
 	return nil
 }

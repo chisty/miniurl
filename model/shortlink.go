@@ -7,7 +7,7 @@ import (
 
 type ShortLink struct {
 	ID        string `json:"id"`
-	URL       string `json:"URL"`
+	URL       string `json:"url"`
 	CreatedOn string `json:"createdOn"`
 }
 

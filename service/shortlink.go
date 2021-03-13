@@ -1,9 +1,7 @@
 package service
 
 import (
-	"fmt"
 	"log"
-	"strconv"
 
 	"github.com/bwmarrin/snowflake"
 	"github.com/chisty/shortlink/database"
@@ -16,13 +14,12 @@ var base64 []rune
 type LinkService interface {
 	Get(id string) (*model.ShortLink, error)
 	Save(data *model.ShortLink) (*model.ShortLink, error)
-	Test()
 }
 
 type service struct {
-	db   database.DB
-	node *snowflake.Node
-	l    *log.Logger
+	db     database.DB
+	idGen  *snowflake.Node
+	logger *log.Logger
 }
 
 func init() {
@@ -30,59 +27,62 @@ func init() {
 }
 
 //NewService ---
-func NewService(d database.DB, nid string, log *log.Logger) LinkService {
-	n := getSnowflakeNode(nid)
+func NewService(d database.DB, idgenId int, log *log.Logger) LinkService {
+	idGen, err := snowflake.NewNode(int64(idgenId))
+	if err != nil {
+		panic(err)
+	}
+
 	return &service{
-		db:   d,
-		node: n,
-		l:    log,
+		db:     d,
+		idGen:  idGen,
+		logger: log,
 	}
 }
 
-func (s *service) Test() {
-	fmt.Println("Test done")
-}
-
 func (s *service) Get(id string) (*model.ShortLink, error) {
-	s.l.Printf("service get %s", id)
+	s.logger.Printf("service get %s", id)
 	return s.db.Get(id)
 }
 
 func (s *service) Save(data *model.ShortLink) (*model.ShortLink, error) {
-	data.ID = getNextID(s.node)
+	data.ID = getNextID(s.idGen)
 	err := s.db.Save(data)
 	return data, err
 }
 
-func getNextID(node *snowflake.Node) string {
-	id := node.Generate().Int64()
+func getNextID(idGen *snowflake.Node) string {
+	id := idGen.Generate().Int64()
 	return convertToBase64(id, base64)
 }
 
 func convertToBase64(val int64, baseD []rune) string {
 	temp := []rune{}
 	baseL := int64(len(baseD))
+	neg := false
+
+	if val == 0 {
+		return "0"
+	}
+
+	if val < 0 {
+		neg = true
+		val *= -1
+	}
 
 	for val > 0 {
 		temp = append(temp, baseD[val%baseL])
 		val /= baseL
 	}
 
+	l := len(temp)
+	for i := 0; i < l/2; i++ {
+		temp[i], temp[l-i-1] = temp[l-i-1], temp[i]
+	}
+
+	if neg {
+		return "-" + string(temp)
+	}
+
 	return string(temp)
-}
-
-func getSnowflakeNode(nid string) *snowflake.Node {
-	if len(nid) == 0 {
-		nid = "1"
-	}
-	n, err := strconv.ParseInt(nid, 10, 64)
-	if err != nil {
-		panic(err)
-	}
-	node, err := snowflake.NewNode(n)
-	if err != nil {
-		panic(err)
-	}
-
-	return node
 }

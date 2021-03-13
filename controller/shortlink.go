@@ -13,30 +13,22 @@ import (
 )
 
 type linkController struct {
-	s service.LinkService
-	c cache.Cache
-	l *log.Logger
+	service service.LinkService
+	cache   cache.Cache
+	logger  *log.Logger
 }
 
 type LinkController interface {
-	Test(rw http.ResponseWriter, r *http.Request)
 	Get(response http.ResponseWriter, r *http.Request)
 	Save(response http.ResponseWriter, r *http.Request)
 }
 
 func NewLinkController(service service.LinkService, cache cache.Cache, log *log.Logger) LinkController {
 	return &linkController{
-		s: service,
-		c: cache,
-		l: log,
+		service: service,
+		cache:   cache,
+		logger:  log,
 	}
-}
-
-func (lc *linkController) Test(rw http.ResponseWriter, r *http.Request) {
-	rw.Header().Set("Content-Type", "application/json")
-	lc.s.Test()
-	rw.WriteHeader(http.StatusOK)
-	rw.Write([]byte("Test working. Hello from server..."))
 }
 
 func (lc *linkController) Get(rw http.ResponseWriter, r *http.Request) {
@@ -45,21 +37,21 @@ func (lc *linkController) Get(rw http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
 	id := vars["id"]
 
-	item, err := lc.c.Get(id)
+	item, err := lc.cache.Get(id)
 	if item != nil {
 		rw.WriteHeader(http.StatusOK)
 		item.ToJSON(rw)
 		return
 	}
 
-	slink, err := lc.s.Get(id)
+	slink, err := lc.service.Get(id)
 	if err != nil {
 		rw.WriteHeader(http.StatusNotFound)
 		json.NewEncoder(rw).Encode("no value found for this id")
 		return
 	}
 
-	lc.c.Set(id, slink)
+	lc.cache.Set(id, slink)
 
 	rw.WriteHeader(http.StatusOK)
 	slink.ToJSON(rw)
@@ -67,7 +59,6 @@ func (lc *linkController) Get(rw http.ResponseWriter, r *http.Request) {
 
 func (lc *linkController) Save(rw http.ResponseWriter, r *http.Request) {
 	rw.Header().Set("Content-Type", "application/json")
-
 	link := model.ShortLink{}
 	err := link.FromJSON(r.Body)
 
@@ -78,14 +69,14 @@ func (lc *linkController) Save(rw http.ResponseWriter, r *http.Request) {
 
 	link.CreatedOn = time.Now().UTC().String()
 
-	item, err := lc.s.Save(&link)
+	item, err := lc.service.Save(&link)
 	if err != nil {
 		rw.WriteHeader(http.StatusInternalServerError)
 		json.NewEncoder(rw).Encode(err)
 		return
 	}
 
-	lc.c.Set(link.ID, &link)
+	lc.cache.Set(link.ID, &link)
 
 	rw.WriteHeader(http.StatusOK)
 	json.NewEncoder(rw).Encode(item)
