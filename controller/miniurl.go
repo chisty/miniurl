@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"log"
 	"net/http"
+	"net/url"
 	"strings"
 	"time"
 
@@ -65,15 +66,26 @@ func (ctrl *controller) Get(rw http.ResponseWriter, r *http.Request) {
 
 func (ctrl *controller) Save(rw http.ResponseWriter, r *http.Request) {
 	rw.Header().Set("Content-Type", "application/json")
-	miniurl := model.MiniURL{}
-	err := miniurl.FromJSON(r.Body)
+	defer r.Body.Close()
 
+	var req model.PostRequest
+	err := req.FromJSON(r.Body)
 	if err != nil {
-		http.Error(rw, "invalid or malformed input", http.StatusBadRequest)
+		http.Error(rw, "could not decode request values", http.StatusBadRequest)
 		return
 	}
 
-	miniurl.CreatedOn = time.Now().UTC().String()
+	_, err = url.ParseRequestURI(req.URL)
+	if err != nil {
+		ctrl.logger.Println(err)
+		http.Error(rw, err.Error(), http.StatusBadRequest)
+		return
+	}
+
+	miniurl := model.MiniURL{
+		URL:       req.URL,
+		CreatedOn: time.Now().UTC().String(),
+	}
 
 	item, err := ctrl.service.Save(&miniurl)
 	if err != nil {

@@ -20,7 +20,6 @@ import (
 
 func main() {
 	cfg := LoadConfig()
-	fmt.Printf("%+v", cfg)
 
 	logger := log.New(os.Stdout, "shortlink-app", log.LstdFlags|log.Lshortfile)
 	redis := cache.NewRedis(cfg.Redis.Host, logger, cfg.Redis.TTL, cfg.Redis.MaxIdle, cfg.Redis.MaxActive)
