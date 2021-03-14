@@ -14,6 +14,6 @@ EXPOSE 9000
 
 RUN go build
 
-RUN go test ./...
+RUN go test -v ./...
 
 CMD ["./miniurl"]

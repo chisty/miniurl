@@ -21,7 +21,7 @@ import (
 func main() {
 	cfg := LoadConfig()
 
-	logger := log.New(os.Stdout, "shortlink-app", log.LstdFlags|log.Lshortfile)
+	logger := log.New(os.Stdout, "miniurl-app", log.LstdFlags|log.Lshortfile)
 	redis := cache.NewRedis(cfg.Redis.Host, logger, cfg.Redis.TTL, cfg.Redis.MaxIdle, cfg.Redis.MaxActive)
 	db := database.NewDynamoDB(cfg.AWS.Table, logger, cfg.AWS.Region, cfg.AWS.AccessKey, cfg.AWS.SecretKey)
 	svc := service.NewMiniURLSvc(db, cfg.IdGenNodeId, logger)
