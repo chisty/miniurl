@@ -2,6 +2,7 @@ package controller
 
 import (
 	"encoding/json"
+	"fmt"
 	"log"
 	"net/http"
 	"time"
@@ -9,6 +10,7 @@ import (
 	"github.com/chisty/miniurl/cache"
 	"github.com/chisty/miniurl/model"
 	"github.com/chisty/miniurl/service"
+	"github.com/dgrijalva/jwt-go"
 	"github.com/gorilla/mux"
 )
 
@@ -32,6 +34,14 @@ func NewMiniURLCtrl(service service.MiniURLSvc, cache cache.Cache, log *log.Logg
 }
 
 func (ctrl *controller) Get(rw http.ResponseWriter, r *http.Request) {
+	fmt.Println("Get CTRL")
+	claims := r.Context().Value("props").(jwt.MapClaims)
+	fmt.Println(claims)
+
+	for key, val := range claims {
+		fmt.Printf("key %s, value %v\n", key, val)
+	}
+
 	rw.Header().Set("Content-Type", "application/json")
 
 	vars := mux.Vars(r)

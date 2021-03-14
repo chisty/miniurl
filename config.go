@@ -46,16 +46,6 @@ func defaultConfig() Config {
 }
 
 func LoadConfig() Config {
-	// accessKey := os.Getenv("AWS_ACCESS_KEY")
-	// if len(accessKey) == 0 {
-	// 	panic("aws access key cannot be empty.")
-	// }
-
-	// secretKey := os.Getenv("AWS_SECRET_KEY")
-	// if len(secretKey) == 0 {
-	// 	panic("aws access key cannot be empty.")
-	// }
-
 	var c Config
 	f, err := os.Open(".config")
 	if err != nil {

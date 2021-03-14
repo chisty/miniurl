@@ -10,7 +10,7 @@ import (
 
 var base64 []rune
 
-//ShortLinkService ---
+//MiniURLSvc ---
 type MiniURLSvc interface {
 	Get(id string) (*model.MiniURL, error)
 	Save(data *model.MiniURL) (*model.MiniURL, error)

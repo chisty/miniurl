@@ -7,6 +7,7 @@ import (
 	"net/http"
 	"os"
 	"os/signal"
+	"strings"
 	"syscall"
 	"time"
 
@@ -14,8 +15,43 @@ import (
 	"github.com/chisty/miniurl/controller"
 	"github.com/chisty/miniurl/database"
 	"github.com/chisty/miniurl/service"
+	"github.com/dgrijalva/jwt-go"
 	"github.com/gorilla/mux"
 )
+
+var mySigningKey = []byte("my_super_secret_key")
+
+func handleAuth(next http.HandlerFunc) http.HandlerFunc {
+	return http.HandlerFunc(func(rw http.ResponseWriter, r *http.Request) {
+		fmt.Println("Middleware Auth")
+		authHeader := strings.Split(r.Header.Get("Authorization"), "Bearer ")
+		if len(authHeader) != 2 {
+			fmt.Println("Malformed token")
+			rw.WriteHeader(http.StatusUnauthorized)
+			rw.Write([]byte("Malformed token."))
+		} else {
+			jwtToken := authHeader[1]
+			token, err := jwt.Parse(jwtToken, func(token *jwt.Token) (interface{}, error) {
+				if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
+					return nil, fmt.Errorf("unexpected signing method: %v", token.Header["alg"])
+				}
+				return []byte(mySigningKey), nil
+			})
+
+			if claims, ok := token.Claims.(jwt.MapClaims); ok && token.Valid {
+				fmt.Println(claims)
+				fmt.Println("----------------------")
+				fmt.Printf("%+v\n", claims)
+				ctx := context.WithValue(r.Context(), "props", claims)
+				next.ServeHTTP(rw, r.WithContext(ctx))
+			} else {
+				fmt.Println(err)
+				rw.WriteHeader(http.StatusUnauthorized)
+				rw.Write([]byte("Unauthorized"))
+			}
+		}
+	})
+}
 
 func main() {
 	cfg := LoadConfig()
@@ -32,7 +68,7 @@ func main() {
 	postRouter := router.Methods(http.MethodPost).Subrouter()
 
 	// getRouter.HandleFunc("/test", ctrl.Test)
-	getRouter.HandleFunc("/{id}", ctrl.Get)
+	getRouter.HandleFunc("/{id}", handleAuth(ctrl.Get))
 	postRouter.HandleFunc("/", ctrl.Save)
 
 	s := &http.Server{
