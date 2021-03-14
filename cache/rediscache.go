@@ -78,11 +78,12 @@ func setVal(conn redis.Conn, ttl int, key, val string) error {
 }
 
 func getVal(conn redis.Conn, ttl int, key string) (string, error) {
-	val, err := redis.String(conn.Do("GETEX", key, "EX", ttl))
+	val, err := redis.String(conn.Do("GET", key))
 	if err != nil {
 		return "", err
 	}
 
+	_ = setVal(conn, ttl, key, val)
 	return val, nil
 }
 
