@@ -22,6 +22,9 @@ func NewAuth(sk string, log *log.Logger) *Auth {
 	}
 }
 
+//HandlerAuth will check bearer token (jwt) to validate if it contains any claim with {"app":"miniurl"} claim. Currently the token
+//is created with a fixed secret key from docker env variable/.config file.
+//In real scenario, there should be serparate auth service which will issue token/refresh token and app will authenticate based on that
 func (auth *Auth) HandleAuth(next http.HandlerFunc) http.HandlerFunc {
 	return http.HandlerFunc(func(rw http.ResponseWriter, r *http.Request) {
 		authHeader := strings.Split(r.Header.Get("Authorization"), "Bearer ")
@@ -38,6 +41,7 @@ func (auth *Auth) HandleAuth(next http.HandlerFunc) http.HandlerFunc {
 				return []byte(auth.secretKey), nil
 			})
 
+			//if token has fixed predefined claim with key "app" & value "miniurl", we assume authenticated for now
 			if claims, ok := token.Claims.(jwt.MapClaims); ok && token.Valid {
 				if appid, ok := claims["app"]; ok {
 					if strings.ToLower(appid.(string)) == "miniurl" {

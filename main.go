@@ -19,8 +19,10 @@ import (
 )
 
 func main() {
+	//load mandatory field(s) from config file, env variables
 	cfg := LoadConfig()
 
+	//initialize dependencies
 	logger := log.New(os.Stdout, "miniurl-app", log.LstdFlags|log.Lshortfile)
 	redis := cache.NewRedis(cfg.Redis.Host, logger, cfg.Redis.TTL, cfg.Redis.MaxIdle, cfg.Redis.MaxActive)
 	db := database.NewDynamoDB(cfg.AWS.Table, logger, cfg.AWS.Region, cfg.AWS.AccessKey, cfg.AWS.SecretKey)

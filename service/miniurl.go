@@ -10,10 +10,9 @@ import (
 
 var base64 []rune
 
-//MiniURLSvc ---
-type MiniURLSvc interface {
-	Get(id string) (*model.MiniURL, error)
-	Save(data *model.MiniURL) (*model.MiniURL, error)
+func init() {
+	//base64 is the selected 64 unique digits which is used for base conversion
+	base64 = []rune("0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz_=")
 }
 
 type service struct {
@@ -22,12 +21,10 @@ type service struct {
 	logger *log.Logger
 }
 
-func init() {
-	base64 = []rune("0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz_=")
-}
-
-//NewMiniURLSvc ---
+//NewMiniURLSvc is the implementation of MiniURLSvc
 func NewMiniURLSvc(d database.DB, idgenId int, log *log.Logger) MiniURLSvc {
+	//idGen is the id generator. Currently it is taking idGenID as node id. In real scenario, this should be a separate service which
+	//will provide unique id for a distributed system. snowflake is twitter's approach to create unique id for distributed system.
 	idGen, err := snowflake.NewNode(int64(idgenId))
 	if err != nil {
 		panic(err)
@@ -41,7 +38,6 @@ func NewMiniURLSvc(d database.DB, idgenId int, log *log.Logger) MiniURLSvc {
 }
 
 func (svc *service) Get(id string) (*model.MiniURL, error) {
-	svc.logger.Printf("service get %s", id)
 	return svc.db.Get(id)
 }
 
@@ -56,6 +52,7 @@ func nextID(idGen *snowflake.Node) string {
 	return convertToBase64(id, base64)
 }
 
+//basic base conversion from decimal to base64
 func convertToBase64(val int64, baseD []rune) string {
 	temp := []rune{}
 	baseL := int64(len(baseD))

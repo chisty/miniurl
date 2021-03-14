@@ -18,7 +18,7 @@ type dymamoDB struct {
 	logger  *log.Logger
 }
 
-//NewDynamoDB ---
+//NewDynamoDB is the implementation of DB interface
 func NewDynamoDB(tbl string, log *log.Logger, rgn, acsKey, secKey string) DB {
 	return &dymamoDB{
 		table:   tbl,
@@ -28,8 +28,6 @@ func NewDynamoDB(tbl string, log *log.Logger, rgn, acsKey, secKey string) DB {
 }
 
 func (db *dymamoDB) Get(id string) (*model.MiniURL, error) {
-	db.logger.Println("get from ddb: ", id)
-
 	item, err := getItem(db.context, db.table, id)
 	if err != nil {
 		return nil, err
@@ -46,13 +44,12 @@ func (db *dymamoDB) Get(id string) (*model.MiniURL, error) {
 		return nil, err
 	}
 
-	db.logger.Printf("get from ddb success with value: %s", slink.URL)
+	db.logger.Println("get from ddb success for id: ", id)
+
 	return &slink, nil
 }
 
 func (db *dymamoDB) Save(data *model.MiniURL) error {
-	db.logger.Println("save in ddb: ", data.ID)
-
 	attrVal, err := dynamodbattribute.MarshalMap(data)
 	if err != nil {
 		return err
@@ -68,6 +65,7 @@ func (db *dymamoDB) Save(data *model.MiniURL) error {
 	return nil
 }
 
+//getItem is used to fetch from dynamodb using aws api.
 func getItem(dbApi dynamodbiface.DynamoDBAPI, tbl string, id string) (*dynamodb.GetItemOutput, error) {
 	resp, err := dbApi.GetItem(&dynamodb.GetItemInput{
 		TableName: aws.String(tbl),
@@ -82,6 +80,7 @@ func getItem(dbApi dynamodbiface.DynamoDBAPI, tbl string, id string) (*dynamodb.
 		return nil, err
 	}
 
+	//if data is not saved, dynamodb will send empty json. Empty check is necessary to handle empty/null value
 	if len(resp.Item) == 0 {
 		return nil, nil
 	}

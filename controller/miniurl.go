@@ -44,6 +44,7 @@ func (ctrl *controller) Get(rw http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	//try get from cache first
 	item, err := ctrl.cache.Get(id)
 	if item != nil {
 		rw.WriteHeader(http.StatusOK)
@@ -51,6 +52,7 @@ func (ctrl *controller) Get(rw http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	//try get from db if cache miss
 	miniurl, err := ctrl.service.Get(id)
 	if err != nil || miniurl == nil {
 		rw.WriteHeader(http.StatusNotFound)
@@ -58,6 +60,7 @@ func (ctrl *controller) Get(rw http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	//set cache with the newly fetched value from db
 	ctrl.cache.Set(id, miniurl)
 
 	rw.WriteHeader(http.StatusTemporaryRedirect)
@@ -94,6 +97,7 @@ func (ctrl *controller) Save(rw http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	//save to cache if data saved in db
 	ctrl.cache.Set(miniurl.ID, &miniurl)
 
 	rw.WriteHeader(http.StatusOK)

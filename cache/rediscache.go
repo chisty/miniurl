@@ -15,6 +15,7 @@ type rediscache struct {
 	logger *log.Logger
 }
 
+//NewRedis is implemenation of redis cache maintaining Cahe interface.
 func NewRedis(host string, lg *log.Logger, ttl, mxidle, mxactive int) Cache {
 	pl := initPool(host, mxidle, mxactive)
 	r := &rediscache{
@@ -83,10 +84,12 @@ func getVal(conn redis.Conn, ttl int, key string) (string, error) {
 		return "", err
 	}
 
+	//if getvalue success try to update ttl
 	_ = setVal(conn, ttl, key, val)
 	return val, nil
 }
 
+//initpool will create redis connection pool which will be faster and easier to access.
 func initPool(host string, mxidle, mxactive int) *redis.Pool {
 	return &redis.Pool{
 		MaxIdle:   mxidle,

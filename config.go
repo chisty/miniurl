@@ -49,10 +49,13 @@ func defaultConfig() Config {
 
 func LoadConfig() Config {
 	var c Config
+
 	f, err := os.Open(".config")
+	//if no .config file available, load default config
 	if err != nil {
 		c = defaultConfig()
 	} else {
+		//if .config file available load config from that file
 		dec := json.NewDecoder(f)
 		err = dec.Decode(&c)
 		if err != nil {
@@ -60,6 +63,7 @@ func LoadConfig() Config {
 		}
 	}
 
+	//AWS Access & Secret Key should be read from ENV variable only
 	c.AWS.AccessKey = os.Getenv("AWS_ACCESS_KEY")
 	if len(c.AWS.AccessKey) == 0 {
 		panic("aws access key cannot be empty.")
@@ -70,6 +74,7 @@ func LoadConfig() Config {
 		panic("aws access key cannot be empty.")
 	}
 
+	//Update data for following items if there is any existing environment variable with the corresponding key.
 	table := os.Getenv("AWS_TABLE")
 	if len(table) > 0 {
 		c.AWS.Table = table
