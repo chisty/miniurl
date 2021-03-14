@@ -22,10 +22,11 @@ type Redis struct {
 }
 
 type Config struct {
-	AWS         AWS   `json:"aws"`
-	Redis       Redis `json:"redis"`
-	Port        int   `json:"port"`
-	IdGenNodeId int   `json:"idgen_node_id"`
+	AWS         AWS    `json:"aws"`
+	Redis       Redis  `json:"redis"`
+	Port        int    `json:"port"`
+	IdGenNodeId int    `json:"idgen_node_id"`
+	AuthSecret  string `json:"auth_secret"`
 }
 
 func defaultConfig() Config {
@@ -42,6 +43,7 @@ func defaultConfig() Config {
 		},
 		Port:        9000,
 		IdGenNodeId: 1,
+		AuthSecret:  "jwt_secret_key_val",
 	}
 }
 
@@ -84,7 +86,7 @@ func LoadConfig() Config {
 		panic("aws region name cannot be empty.")
 	}
 
-	host := os.Getenv("Redis_URL")
+	host := os.Getenv("REDIS_URL")
 	if len(host) > 0 {
 		c.Redis.Host = host
 	}
@@ -92,7 +94,7 @@ func LoadConfig() Config {
 		panic("redis url cannot be empty.")
 	}
 
-	ttl := os.Getenv("Redis_TTL")
+	ttl := os.Getenv("REDIS_TTL")
 	if len(ttl) > 0 {
 		c.Redis.TTL, err = strconv.Atoi(ttl)
 		if err != nil {
@@ -102,6 +104,11 @@ func LoadConfig() Config {
 
 	if c.Redis.TTL <= 0 {
 		panic("redis ttl is invalid.")
+	}
+
+	authSecret := os.Getenv("JWT_SECRET")
+	if len(authSecret) > 0 {
+		c.AuthSecret = authSecret
 	}
 
 	fmt.Println("Successfully loaded configuration.")
