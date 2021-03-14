@@ -13,5 +13,5 @@ services:
       - AWS_ACCESS_KEY=AKIAQFG3MA563D6YLGUF
       - AWS_SECRET_KEY=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
       - REDIS_URL=redis.fcq4bj.0001.apse1.cache.amazonaws.com:6379
-      - REDIS_TTL=10
+      - REDIS_TTL=2592000
       - JWT_SECRET=my_super_secret_key      
