@@ -111,6 +111,10 @@ func LoadConfig() Config {
 		c.AuthSecret = authSecret
 	}
 
+	if len(c.AuthSecret) == 0 {
+		panic("auth secret cannot be empty")
+	}
+
 	fmt.Println("Successfully loaded configuration.")
 	return c
 }

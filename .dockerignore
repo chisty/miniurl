@@ -1,0 +1,8 @@
+*.md
+
+**/.git
+
+*.exe
+*.exe~
+.dll
+*.bat
