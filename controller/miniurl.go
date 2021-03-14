@@ -23,6 +23,7 @@ type controller struct {
 type MiniURLCtrl interface {
 	Get(response http.ResponseWriter, r *http.Request)
 	Save(response http.ResponseWriter, r *http.Request)
+	Start(response http.ResponseWriter, r *http.Request)
 }
 
 func NewMiniURLCtrl(service service.MiniURLSvc, cache cache.Cache, log *log.Logger) MiniURLCtrl {
@@ -31,6 +32,12 @@ func NewMiniURLCtrl(service service.MiniURLSvc, cache cache.Cache, log *log.Logg
 		cache:   cache,
 		logger:  log,
 	}
+}
+
+func (ctrl *controller) Start(rw http.ResponseWriter, r *http.Request) {
+	rw.Header().Set("Content-Type", "application/json")
+	rw.WriteHeader(http.StatusOK)
+	rw.Write([]byte("Miniurl app is running."))
 }
 
 func (ctrl *controller) Get(rw http.ResponseWriter, r *http.Request) {

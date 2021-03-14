@@ -35,6 +35,7 @@ func main() {
 	getRouter := router.Methods(http.MethodGet).Subrouter()
 	postRouter := router.Methods(http.MethodPost).Subrouter()
 
+	getRouter.HandleFunc("/", ctrl.Start)
 	getRouter.HandleFunc("/{id}", auth.HandleAuth(ctrl.Get))
 	postRouter.HandleFunc("/", auth.HandleAuth(ctrl.Save))
 
