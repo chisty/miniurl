@@ -20,12 +20,7 @@ type controller struct {
 	logger  *log.Logger
 }
 
-type MiniURLCtrl interface {
-	Get(response http.ResponseWriter, r *http.Request)
-	Save(response http.ResponseWriter, r *http.Request)
-	Start(response http.ResponseWriter, r *http.Request)
-}
-
+//NewMiniURLCtrl is implementation of MiniURLCtrl interface
 func NewMiniURLCtrl(service service.MiniURLSvc, cache cache.Cache, log *log.Logger) MiniURLCtrl {
 	return &controller{
 		service: service,
@@ -34,6 +29,7 @@ func NewMiniURLCtrl(service service.MiniURLSvc, cache cache.Cache, log *log.Logg
 	}
 }
 
+//landing page
 func (ctrl *controller) Start(rw http.ResponseWriter, r *http.Request) {
 	rw.Header().Set("Content-Type", "application/json")
 	rw.WriteHeader(http.StatusOK)
@@ -87,7 +83,6 @@ func (ctrl *controller) Save(rw http.ResponseWriter, r *http.Request) {
 
 	_, err = url.ParseRequestURI(req.URL)
 	if err != nil {
-		ctrl.logger.Println(err)
 		http.Error(rw, err.Error(), http.StatusBadRequest)
 		return
 	}
