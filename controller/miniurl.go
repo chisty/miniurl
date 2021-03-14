@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"log"
 	"net/http"
+	"strings"
 	"time"
 
 	"github.com/chisty/miniurl/cache"
@@ -35,7 +36,12 @@ func (ctrl *controller) Get(rw http.ResponseWriter, r *http.Request) {
 	rw.Header().Set("Content-Type", "application/json")
 
 	vars := mux.Vars(r)
-	id := vars["id"]
+	id := strings.TrimSpace(vars["id"])
+	if len(id) == 0 {
+		rw.WriteHeader(http.StatusBadRequest)
+		rw.Write([]byte("invalid request value in route"))
+		return
+	}
 
 	item, err := ctrl.cache.Get(id)
 	if item != nil {
@@ -53,7 +59,7 @@ func (ctrl *controller) Get(rw http.ResponseWriter, r *http.Request) {
 
 	ctrl.cache.Set(id, miniurl)
 
-	rw.WriteHeader(http.StatusOK)
+	rw.WriteHeader(http.StatusTemporaryRedirect)
 	miniurl.ToJSON(rw)
 }
 
