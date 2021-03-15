@@ -27,8 +27,8 @@ microservice to make short url
 -	I have listed all necessary environment variables in docker-compose file which should be saved in PROD env variable or CI/CD secret in real scenario.
 
 
-##How to Run
-###Local Environment
+## How to Run
+### Local Environment
 
 Running below command in console will fetch docker images and run miniurl app on port 9000 & 9001 in local environment:
 
@@ -50,7 +50,7 @@ After executing docker-compose, go to localhost: 9001 or 9002.
 ![2021-03-15_04h26_48](https://user-images.githubusercontent.com/2306114/111114068-50f84000-8595-11eb-9bda-f5a9a0951f35.png)
 
 
-###POST Call/ Save URL:
+### POST Call/ Save URL:
 
 We can now save data using Post call to our app. Using Postman, it will be like below:
 
@@ -72,7 +72,7 @@ JWT token can be generated from jwt.io webpage. miniurl app only checks if it ha
 
 Copying the token from Encoded section (3) and putting it as bearer token will be sufficient for now. Both **GET & POST** is validating our basic JWT token.
 
-###GET Call/ Fetch URL:
+### GET Call/ Fetch URL:
 
 Setting the jwt token & putting **{id}** in the route will fetch the stored long URL
 
@@ -81,7 +81,7 @@ Setting the jwt token & putting **{id}** in the route will fetch the stored long
 For now, app is returning 307 (temporary redirect) with full response. 
 
 
-##PROD Environment
+## PROD Environment
 
 In production, miniurl is running on AWS free tier only. 
 - Deployed on a docker container inside free ec2 instance. 
@@ -94,11 +94,11 @@ Testing PROD instance is same like local instance. Both needs same bearer token 
     
 ![2021-03-15_04h59_22](https://user-images.githubusercontent.com/2306114/111114743-41c5c200-8596-11eb-986c-d3a1246b86a6.png)
 
-###POST data in PROD:
+### POST data in PROD:
 
 ![2021-03-15_04h59_55](https://user-images.githubusercontent.com/2306114/111114794-55712880-8596-11eb-9c89-214511daf69e.png)
 
-###GET data in PROD:
+### GET data in PROD:
 
 ![2021-03-15_05h00_41](https://user-images.githubusercontent.com/2306114/111114824-615cea80-8596-11eb-9f28-a8e02161007d.png)
 
