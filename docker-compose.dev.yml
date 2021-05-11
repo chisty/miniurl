@@ -24,8 +24,8 @@ services:
       - default
     environment: 
       - AWS_REGION=ap-southeast-1
-      - AWS_ACCESS_KEY=AKIAQFG3MA563D6YLGUF
-      - AWS_SECRET_KEY=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
+      - AWS_ACCESS_KEY=ACCESS_KEY
+      - AWS_SECRET_KEY=SECRET_KEY
       - REDIS_URL=redis:6379
       - REDIS_TTL=10
       - JWT_SECRET=my_super_secret_key
